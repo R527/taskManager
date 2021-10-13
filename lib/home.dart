@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/taskControllerPage.dart';
-// import 'package:charts_flutter/flutter.dart' as charts;
+import 'package:charts_flutter/flutter.dart' as charts;
+import '_lock_page.dart';
 import '_task_setting.dart';
 import '_time_controller_page.dart';
 
@@ -11,6 +12,8 @@ import '_time_controller_page.dart';
 
 
 class HomePage extends StatefulWidget {
+  HomePage(this.achievementTaskFlag);
+  String achievementTaskFlag;//タスクが達成したらtrue
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
@@ -22,23 +25,21 @@ class _MyHomePageState extends State<HomePage> {
   int taskNum = 0;//タスクの数を保存
   final GlobalKey<ScaffoldState> _openDrawerKey = GlobalKey<ScaffoldState>();//Drawer用
   String dropdownValue = '月間';//月間年間ごとのグラフを切り替え用フラグ
-  final timeControllerList = <GraphData>[];//グラフのデータ格納
-  bool checkBoxFlag = false;
+  final usePhoneList = <UsePhoneData>[];//グラフのデータ格納
+
   bool isLoading = true;
 
   //List
   List<TaskDataList> taskDataList = [];
-  List<bool> checkBoxFlagList = [];
-  List<String> taskList = [];
-  List<List<bool>> taskRankingList = [];
 
   Future<void> init() async{
+    //Prefs 全削除
     if(isPrefsClear){
       SharedPreferences preferences = await SharedPreferences.getInstance();
       preferences.clear();
     }
 
-
+    //タスク内容をロードする
     taskNum = await loadIntPrefs('taskDataListLength');
     if(taskNum != 0){
       for(int i = 0;i < taskNum; i++){
@@ -50,6 +51,28 @@ class _MyHomePageState extends State<HomePage> {
         taskDataList.add(TaskDataList(task, list, false));
       }
     }
+
+    //グラフデータ関連
+    var now = DateTime.now();
+    final _dateFormatter = DateFormat("yyyy/MM/dd'");
+    //今日のグラフデータをロードセットする
+    String day = DateFormat('yyyy/MM/dd').format(now);
+    int usePhone = await loadIntPrefs('usePhone' + day);
+    int achievementTask = await loadIntPrefs('achievementTask' + day);
+    print('achievementTask' + achievementTask.toString());
+
+
+    DateTime dateTime = _dateFormatter.parseStrict(day);
+    usePhoneList.add(UsePhoneData(dateTime,usePhone,achievementTask));
+    //昨日までのグラフデータをロードする
+    for(int i = 1;i < 365;i++){
+      String day = DateFormat('yyyy/MM/dd').format(now.add(Duration(days:i) * -1));
+      int usePhone = await loadIntPrefs('usePhone' + day);
+      int achievementTask = await loadIntPrefs('achievementTask' + day);
+      DateTime dateTime = _dateFormatter.parseStrict(day);
+      usePhoneList.add(UsePhoneData(dateTime,usePhone,achievementTask));
+    }
+
     isLoading = false;
     setState(() {});//画面を再描画するときに必要
   }
@@ -103,6 +126,7 @@ class _MyHomePageState extends State<HomePage> {
             _homeControllerPage('ホーム'),
             _timeControllerPage('ロック管理'),
             _taskControllerPage('タスク管理'),
+            _lockControllerPage('ロック画面'),
           ],
         ),
       ),
@@ -120,7 +144,7 @@ class _MyHomePageState extends State<HomePage> {
         onTap: (){
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => HomePage()),
+            MaterialPageRoute(builder: (context) => HomePage('')),
           );
         }
       ),
@@ -168,6 +192,25 @@ class _MyHomePageState extends State<HomePage> {
     );
   }
 
+  //Drawer　Homeページへ
+  Widget _lockControllerPage(String text){
+    return Container(
+      child: ListTile(
+          title: Text(text),
+          trailing: Icon(Icons.arrow_forward),
+          onTap: (){
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => LockPage()),
+            );
+          }
+      ),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(width: 1.0,color:Colors.grey)),
+      ),
+    );
+  }
+
   //タスク達成数とスマホ使用時間のグラフ表示
   Widget _lockCountView(){
     return Container(
@@ -189,7 +232,7 @@ class _MyHomePageState extends State<HomePage> {
               _dayChangedDropDownButton(),//表示日時の範囲切り替え
             ],
           ),
-          //_timeSeriesChart(),
+          _timeSeriesChart(),
         ],
       ),
     );
@@ -242,44 +285,42 @@ class _MyHomePageState extends State<HomePage> {
     return '$prevday  ~  $today';
   }
 
-  // //グラフの表示
-  // Widget _timeSeriesChart() {
-  //   return Container(
-  //     height: 200,
-  //     width: double.infinity,
-  //     child: charts.TimeSeriesChart(
-  //       _createTimeData(timeControllerList),
-  //     ),
-  //   );
-  // }
-  //
-  // List<charts.Series<GraphData, DateTime>> _createTimeData(
-  //     List<GraphData> timeControllerList) {
-  //   return [
-  //     charts.Series<GraphData, DateTime>(
-  //       id: 'TimeController',
-  //       data: timeControllerList,
-  //       colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
-  //       domainFn: (timeData,_) => timeData.day,
-  //       measureFn: (timeData, _) => timeData.usePhone,
-  //     )
-  //   ];
-  // }
-  //
-  // Future<void> _createTimeDataList() async {
-  //   final SharedPreferences prefs = await SharedPreferences.getInstance();
-  //   String today = DateFormat('yyyy:MM:dd').format(DateTime.now()).toString();
-  //   var now = DateTime.now();
-  //   timeControllerList.add(GraphData(now, 10));
-  //   setState(() {});
-  //
-  //   switch (dropdownValue) {
-  //     case '月間':
-  //       break;
-  //     case '年間':
-  //       break;
-  //   }
-  // }
+  //グラフの表示
+  Widget _timeSeriesChart() {
+    return Container(
+      height: 200,
+      width: double.infinity,
+      child: charts.TimeSeriesChart(
+        _createTimeData(usePhoneList.sublist(0,_getEndMonthOfDay())),
+      ),
+    );
+  }
+
+  List<charts.Series<UsePhoneData, DateTime>> _createTimeData(
+      List<UsePhoneData> usePhoneList) {
+    return [
+      charts.Series<UsePhoneData, DateTime>(
+        id: 'usePhoneController',
+        data: usePhoneList,
+        colorFn: (_, __) => charts.MaterialPalette.blue.shadeDefault,
+        domainFn: (timeData,_) => timeData.day,
+        measureFn: (timeData, _) => timeData.usePhone,
+      ),
+      charts.Series<UsePhoneData, DateTime>(
+        id: 'achievementTaskController',
+        data: usePhoneList,
+        colorFn: (_, __) => charts.MaterialPalette.red.shadeDefault,
+        domainFn: (timeData,_) => timeData.day,
+        measureFn: (timeData, _) => timeData.achievementTask,
+      )
+    ];
+  }
+
+  int _getEndMonthOfDay(){
+    int day = 0;
+    dropdownValue == '月間' ? day = 30:day = 365;
+    return day;
+  }
 
   //タスクを追加するためのボタン
   Widget _addTaskButton(){
@@ -392,7 +433,11 @@ class _MyHomePageState extends State<HomePage> {
 
   Future<void> saveStringPrefs(String setStr,String saveName,int buildNum) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(saveName + '$buildNum', setStr);
+    if(buildNum == null){
+      await prefs.setString(saveName, setStr);
+    }else{
+      await prefs.setString(saveName + '$buildNum', setStr);
+    }
   }
 
   Future<String> loadStringPrefs(String def,String saveName,int buildNum) async{
@@ -440,11 +485,11 @@ class _MyHomePageState extends State<HomePage> {
   }
 }
 
-class GraphData{
+class UsePhoneData{
   final DateTime day;
   final int usePhone;
-
-  GraphData(this.day,this.usePhone);
+  final int achievementTask;
+  UsePhoneData(this.day,this.usePhone,this.achievementTask);
 }
 
 class TaskDataList{

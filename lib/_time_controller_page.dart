@@ -188,7 +188,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
           onTap: (){
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => HomePage()),
+              MaterialPageRoute(builder: (context) => HomePage('')),
             );
           }
       ),

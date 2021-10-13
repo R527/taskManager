@@ -167,7 +167,7 @@ class _TaskControllerPage extends State<TaskControllerPage>{
           onTap: (){
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => HomePage()),
+              MaterialPageRoute(builder: (context) => HomePage('')),
             );
           }
       ),
