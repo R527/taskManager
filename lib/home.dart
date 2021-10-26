@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/taskControllerPage.dart';
@@ -20,6 +23,15 @@ class HomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<HomePage> {
 
+  final BannerAd myBanner = BannerAd(
+    adUnitId: Platform.isAndroid ? 'ca-app-pub-3940256099942544/6300978111' : '',
+    size: AdSize.banner,
+    request: AdRequest(),
+    listener: BannerAdListener(onAdLoaded: (Ad ad) {
+      print('$BannerAd loaded.');
+    }),
+  );
+
   bool isPrefsClear = false;
 
   int taskNum = 0;//タスクの数を保存
@@ -33,6 +45,7 @@ class _MyHomePageState extends State<HomePage> {
   List<TaskDataList> taskDataList = [];
 
   Future<void> init() async{
+    await myBanner.load();
     //Prefs 全削除
     if(isPrefsClear){
       SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -109,13 +122,12 @@ class _MyHomePageState extends State<HomePage> {
     isLoading = false;
     setState(() {});//画面を再描画するときに必要
   }
+
   @override
   void initState() {
     super.initState();
     init();
-
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -133,13 +145,18 @@ class _MyHomePageState extends State<HomePage> {
       ),
 
       body:  Center(
-        child: isLoading ? CircularProgressIndicator() :Column( //todo　ロードが終わらないエラー
+        child: isLoading ? CircularProgressIndicator() :Column(
           children: [
             //グラフ表示
             _lockCountView(),
             //タスク表示
             _addTaskButton(),
             _taskView(),
+            SizedBox(
+              height: 64.0,
+              width: double.infinity,
+              child: AdWidget(ad: myBanner),
+            ),
           ],
         ),
       ),
@@ -515,6 +532,7 @@ class _MyHomePageState extends State<HomePage> {
     }
   }
 }
+
 
 class UsePhoneData{
   final DateTime day;
