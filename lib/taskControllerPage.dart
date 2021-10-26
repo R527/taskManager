@@ -28,6 +28,8 @@ class _TaskControllerPage extends State<TaskControllerPage>{
 
   //Listをロードして初期化
   Future<void> init() async{
+
+    List<TaskDataList> taskList = [];
     taskLen = await loadIntPrefs('taskDataListLength');
     //Listの数が１以上ならロードする
     if(taskLen != 0){
@@ -37,10 +39,21 @@ class _TaskControllerPage extends State<TaskControllerPage>{
 
         task = await loadStringPrefs('','setTask',i);
         for(int x = 0;x < 3; x++) list.add(await loadBoolPrefs(false,'setTaskRanking',i,x));
-        taskDataList.add(TaskDataList(task,list,false));
+        taskList.add(TaskDataList(task,list,false));
+      }
+      //優先度反映
+      for(int x = 0;x < 3; x++){
+        for(int i = 0;i < taskLen; i++){
+          if(taskList[i].taskRankingList[x]){
+            taskDataList.add(taskList[i]);
+          }
+        }
       }
     }
-    isLoading = false;
+
+
+
+   isLoading = false;
     setState(() {});
   }
 

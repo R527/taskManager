@@ -17,25 +17,11 @@ class _TimeControllerPage extends State<TimeControllerPage>{
 
   bool isLoading = true;
 
-  // bool _switchActive = false;
-  // bool _checkBoxActive = false;
-
   //List
   List<LockDataList> lockDataList = [];
   List<String> defDayOfWeekList = ['日','月','火','水','木','金','土'];
-  //int listLen = 0;
 
   Future<void> init()async{
-
-    // for(int i = 0;i < 100; i++){
-    //   removePrefs('startTime',i);
-    //   removePrefs('endTime',i);
-    //   removePrefs('UsingPhoneTimeLimit',i);
-    //   removePrefs('switchActive',i);
-    //   for(int x = 0;x < 7; x++){
-    //     removePrefs('dayOfWeek',i,x);
-    //   }
-    // }
 
     int listLen = await loadIntPrefs(0,'lockDataList.length');
     if(listLen != 0){

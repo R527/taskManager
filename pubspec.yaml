@@ -19,7 +19,6 @@ version: 1.0.0+1
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
-
 dependencies:
   charts_flutter:
     git:
@@ -27,6 +26,8 @@ dependencies:
       path: charts_flutter
   shared_preferences: ^2.0.8
   flutter_picker: ^2.0.2
+  flutter_local_notifications: ^9.0.0
+  timezone: ^0.8.0
   flutter:
     sdk: flutter
 

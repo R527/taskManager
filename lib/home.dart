@@ -42,15 +42,49 @@ class _MyHomePageState extends State<HomePage> {
     //タスク内容をロードする
     taskNum = await loadIntPrefs('taskDataListLength');
     if(taskNum != 0){
+      List<TaskDataList> taskList = [];
       for(int i = 0;i < taskNum; i++){
         String task = '';
         List<bool> list = [];
-
         task = await loadStringPrefs('','setTask',i);
         for(int x = 0;x < 3; x++) list.add(await loadBoolPrefs('setTaskRanking',i,x));
-        taskDataList.add(TaskDataList(task, list, false));
+        taskList.add(TaskDataList(task, list, false));
+      }
+
+      for(int x = 0;x < 3; x++){
+        for(int i = 0;i < taskNum; i++){
+          if(taskList[i].taskRankingList[x]){
+            taskDataList.add(taskList[i]);
+          }
+        }
       }
     }
+
+    //ロック画面からタスク達成した場合一つ削除する
+    if(widget.achievementTaskFlag == '達成' && taskDataList.length > 1){
+      taskDataList.removeAt(0);
+      //一旦Prefs全削除
+      for(int i = 0;i < taskNum + 3; i++){
+        await removePrefs('setTask',i);
+        for(int x = 0;x < 3; x++){
+          await removePrefs('setTaskRanking',i,x);
+        }
+      }
+
+      //セーブしなおし
+      if(taskNum > 1){
+        for(int i = 0;i < taskNum; i++){
+          await saveStringPrefs(taskDataList[i].task,'setTask',i);
+          for(int x = 0;x < 3; x++){
+            await saveBoolPrefs(taskDataList[i].taskRankingList[x],'setTaskRanking',i,x);
+          }
+        }
+      }
+      //List数セーブ
+      await saveIntPrefs(taskDataList.length,'taskDataListLength');
+    }
+
+
 
     //グラフデータ関連
     var now = DateTime.now();
@@ -60,7 +94,6 @@ class _MyHomePageState extends State<HomePage> {
     int usePhone = await loadIntPrefs('usePhone' + day);
     int achievementTask = await loadIntPrefs('achievementTask' + day);
     print('achievementTask' + achievementTask.toString());
-
 
     DateTime dateTime = _dateFormatter.parseStrict(day);
     usePhoneList.add(UsePhoneData(dateTime,usePhone,achievementTask));
@@ -361,9 +394,7 @@ class _MyHomePageState extends State<HomePage> {
 
                 //セーブしなおし
                 for(int i = 0;i < taskDataList.length; i++){
-
                   await saveStringPrefs(taskDataList[i].task,'setTask',i);
-
                   for(int x = 0;x < 3; x++){
                     await saveBoolPrefs(taskDataList[i].taskRankingList[x],'setTaskRanking',i,x);
                   }
@@ -380,7 +411,7 @@ class _MyHomePageState extends State<HomePage> {
             onPressed: (){
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TaskSettingPage(taskDataList.length,true)),//todo List.Length　+　１の処理を追加する
+                MaterialPageRoute(builder: (context) => TaskSettingPage(taskDataList.length,true)),
               );
             },
           ),
@@ -394,7 +425,7 @@ class _MyHomePageState extends State<HomePage> {
         child: Container(
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: taskNum,
+              itemCount: taskDataList.length,
               itemBuilder: (context, index) {
                 return Container(
                     margin: EdgeInsets.all(1),
