@@ -1,0 +1,4 @@
+enum SaveGraph{
+  usePhone,
+  achievementTask
+}

@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_picker/Picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/_time_controller_page.dart';
+
+import 'Comon/Enum/SaveTime.dart';
 
 //タスク管理用のPage
 class TimeSettingPage extends StatefulWidget{
@@ -37,11 +38,11 @@ class _TimeSettingPage extends State<TimeSettingPage> {
 
   Future<void> init() async{
     if(!widget.newBuild){
-      setFirstTime = await loadStringPrefs('00:00','startTime',widget.buildNum);
-      setEndTime = await loadStringPrefs('00:00', 'endTime',widget.buildNum);
-      setUsingPhoneTimeLimit = await loadStringPrefs('15', 'UsingPhoneTimeLimit',widget.buildNum);
+      setFirstTime = await loadStringPrefs('00:00',SaveTime.startTime.toString(),widget.buildNum);
+      setEndTime = await loadStringPrefs('00:00', SaveTime.endTime.toString(),widget.buildNum);
+      setUsingPhoneTimeLimit = await loadStringPrefs('15', SaveTime.UsingPhoneTimeLimit.toString(),widget.buildNum);
       for(int i = 0;i < 7;i++){
-        _isDayOfWeekSelected[i] = await loadBoolPrefs(false, 'dayOfWeek',widget.buildNum,i);
+        _isDayOfWeekSelected[i] = await loadBoolPrefs(false, SaveTime.dayOfWeek.toString(),widget.buildNum,i);
       }
       setState(() {});
     }
@@ -62,14 +63,14 @@ class _TimeSettingPage extends State<TimeSettingPage> {
 
                 //設定内容を保存
                 for(int i = 0;i < 7; i++){
-                  saveBoolPrefs(_isDayOfWeekSelected[i],'dayOfWeek',widget.buildNum,i);
+                  saveBoolPrefs(_isDayOfWeekSelected[i],SaveTime.dayOfWeek.toString(),widget.buildNum,i);
                 }
-                saveStringPrefs(setFirstTime,'startTime',widget.buildNum);
-                saveStringPrefs(setEndTime,'endTime',widget.buildNum);
-                saveStringPrefs(setUsingPhoneTimeLimit,'UsingPhoneTimeLimit',widget.buildNum);
+                saveStringPrefs(setFirstTime,SaveTime.startTime.toString(),widget.buildNum);
+                saveStringPrefs(setEndTime,SaveTime.endTime.toString(),widget.buildNum);
+                saveStringPrefs(setUsingPhoneTimeLimit,SaveTime.UsingPhoneTimeLimit.toString(),widget.buildNum);
 
                 //新規作成の場合　Listの数を更新
-                if(widget.newBuild)saveIntPrefs(widget.buildNum,'lockDataList.length');
+                if(widget.newBuild)saveIntPrefs(widget.buildNum,SaveTime.lockDataListlength.toString());
                 setState(() {});
               //ロック管理画面に戻る
                 Navigator.push(

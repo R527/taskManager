@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:taskpagetest/Comon/CustomDrawer.dart';
+import 'package:taskpagetest/Comon/Enum/SaveGraph.dart';
+import 'Comon/Enum/SaveTask.dart';
 import '_task_setting.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,6 +20,7 @@ class HomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<HomePage> {
 
+  //バナー広告表示のため
   final BannerAd myBanner = BannerAd(
     adUnitId: Platform.isAndroid ? 'ca-app-pub-3940256099942544/6300978111' : '',
     size: AdSize.banner,
@@ -27,6 +30,7 @@ class _MyHomePageState extends State<HomePage> {
     }),
   );
 
+  //Prefs全消去
   bool isPrefsClear = false;
 
   int taskNum = 0;//タスクの数を保存
@@ -48,14 +52,14 @@ class _MyHomePageState extends State<HomePage> {
     }
 
     //タスク内容をロードする
-    taskNum = await loadIntPrefs('taskDataListLength');
+    taskNum = await loadIntPrefs(SaveTask.taskDataListLength.toString());
     if(taskNum != 0){
       List<TaskDataList> taskList = [];
       for(int i = 0;i < taskNum; i++){
         String task = '';
         List<bool> list = [];
-        task = await loadStringPrefs('','setTask',i);
-        for(int x = 0;x < 3; x++) list.add(await loadBoolPrefs('setTaskRanking',i,x));
+        task = await loadStringPrefs('',SaveTask.setTask.toString(),i);
+        for(int x = 0;x < 3; x++) list.add(await loadBoolPrefs(SaveTask.setTaskRanking.toString(),i,x));
         taskList.add(TaskDataList(task, list, false));
       }
 
@@ -68,28 +72,33 @@ class _MyHomePageState extends State<HomePage> {
       }
     }
 
+    print('削除処理');
     //ロック画面からタスク達成した場合一つ削除する
-    if(widget.achievementTaskFlag == '達成' && taskDataList.length > 1){
+    if(widget.achievementTaskFlag == '達成' && taskDataList.length > 0){
+      print('removeTask');
       taskDataList.removeAt(0);
       //一旦Prefs全削除
       for(int i = 0;i < taskNum + 3; i++){
-        await removePrefs('setTask',i);
+        await removePrefs(SaveTask.setTask.toString(),i);
         for(int x = 0;x < 3; x++){
-          await removePrefs('setTaskRanking',i,x);
+          await removePrefs(SaveTask.setTaskRanking.toString(),i,x);
         }
+
       }
 
       //セーブしなおし
       if(taskNum > 1){
-        for(int i = 0;i < taskNum; i++){
-          await saveStringPrefs(taskDataList[i].task,'setTask',i);
+        print(taskDataList[0].task);
+        for(int i = 0;i < taskNum - 1; i++){
+          await saveStringPrefs(taskDataList[i].task,SaveTask.setTask.toString(),i);
           for(int x = 0;x < 3; x++){
-            await saveBoolPrefs(taskDataList[i].taskRankingList[x],'setTaskRanking',i,x);
+            await saveBoolPrefs(taskDataList[i].taskRankingList[x],SaveTask.setTaskRanking.toString(),i,x);
           }
         }
+
       }
       //List数セーブ
-      await saveIntPrefs(taskDataList.length,'taskDataListLength');
+      await saveIntPrefs(taskDataList.length,SaveTask.taskDataListLength.toString());
     }
 
 
@@ -98,18 +107,18 @@ class _MyHomePageState extends State<HomePage> {
     var now = DateTime.now();
     final _dateFormatter = DateFormat("yyyy/MM/dd'");
     //今日のグラフデータをロードセットする
-    String day = DateFormat('yyyy/MM/dd').format(now);
-    int usePhone = await loadIntPrefs('usePhone' + day);
-    int achievementTask = await loadIntPrefs('achievementTask' + day);
-    print('achievementTask' + achievementTask.toString());
-
-    DateTime dateTime = _dateFormatter.parseStrict(day);
-    usePhoneList.add(UsePhoneData(dateTime,usePhone,achievementTask));
+    // String day = DateFormat('yyyy/MM/dd').format(now);
+    // int usePhone = await loadIntPrefs(SaveGraph.usePhone.toString() + day);
+    // int achievementTask = await loadIntPrefs(SaveGraph.achievementTask.toString() + day);
+    // print(SaveGraph.achievementTask.toString() + achievementTask.toString());
+    //
+    // DateTime dateTime = _dateFormatter.parseStrict(day);
+    // usePhoneList.add(UsePhoneData(dateTime,usePhone,achievementTask));
     //昨日までのグラフデータをロードする
-    for(int i = 1;i < 365;i++){
+    for(int i = 0;i < 365;i++){
       String day = DateFormat('yyyy/MM/dd').format(now.add(Duration(days:i) * -1));
-      int usePhone = await loadIntPrefs('usePhone' + day);
-      int achievementTask = await loadIntPrefs('achievementTask' + day);
+      int usePhone = await loadIntPrefs(SaveGraph.usePhone.toString() + day);
+      int achievementTask = await loadIntPrefs(SaveGraph.achievementTask.toString() + day);
       DateTime dateTime = _dateFormatter.parseStrict(day);
       usePhoneList.add(UsePhoneData(dateTime,usePhone,achievementTask));
     }
@@ -304,22 +313,22 @@ class _MyHomePageState extends State<HomePage> {
 
                 //一旦Prefs全削除
                 for(int i = 0;i < len + 3; i++){
-                  await removePrefs('setTask',i);
+                  await removePrefs(SaveTask.setTask.toString(),i);
                   for(int x = 0;x < 3; x++){
-                    await removePrefs('setTaskRanking',i,x);
+                    await removePrefs(SaveTask.setTaskRanking.toString(),i,x);
                   }
                 }
 
                 //セーブしなおし
                 for(int i = 0;i < taskDataList.length; i++){
-                  await saveStringPrefs(taskDataList[i].task,'setTask',i);
+                  await saveStringPrefs(taskDataList[i].task,SaveTask.setTask.toString(),i);
                   for(int x = 0;x < 3; x++){
-                    await saveBoolPrefs(taskDataList[i].taskRankingList[x],'setTaskRanking',i,x);
+                    await saveBoolPrefs(taskDataList[i].taskRankingList[x],SaveTask.setTaskRanking.toString(),i,x);
                   }
                 }
                 //List数セーブ
-                await saveIntPrefs(taskDataList.length,'taskDataListLength');
-                taskNum = await loadIntPrefs('taskDataListLength');
+                await saveIntPrefs(taskDataList.length,SaveTask.taskDataListLength.toString());
+                taskNum = await loadIntPrefs(SaveTask.taskDataListLength.toString());
                 setState(() {});
               },
             ),

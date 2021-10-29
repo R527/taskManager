@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/taskControllerPage.dart';
 
-import 'main.dart';
+import 'Comon/Enum/SaveTask.dart';
 
 //タスクsettingpage
 class TaskSettingPage extends StatefulWidget{
@@ -23,10 +23,10 @@ class _TaskSettingPage extends State<TaskSettingPage>{
 
   //初期設定
   Future<void> init() async{
-    setTaskController.text = await loadStringPrefs('', 'setTask', widget.buildNum);
+    setTaskController.text = await loadStringPrefs('', SaveTask.setTask.toString(), widget.buildNum);
     for(int i = 0;i < 3; i++){
       //優先度１のみtrueそれ以外はfalse
-      _isRankingSelected[i] = await loadBoolPrefs(i == 0 ? true:false,'setTaskRanking',widget.buildNum,i);
+      _isRankingSelected[i] = await loadBoolPrefs(i == 0 ? true:false,SaveTask.setTaskRanking.toString(),widget.buildNum,i);
     }
 
 
@@ -50,9 +50,9 @@ class _TaskSettingPage extends State<TaskSettingPage>{
                   _showDialog();
                 }else{
                   //Save処理
-                  saveStringPrefs(setTaskController.text,'setTask',widget.buildNum);
-                  for(int i = 0;i < 3; i++) saveBoolPrefs(_isRankingSelected[i],'setTaskRanking',widget.buildNum,i);
-                  if(widget.newTask) saveIntPrefs(widget.buildNum + 1,'taskDataListLength');
+                  saveStringPrefs(setTaskController.text,SaveTask.setTask.toString(),widget.buildNum);
+                  for(int i = 0;i < 3; i++) saveBoolPrefs(_isRankingSelected[i],SaveTask.setTaskRanking.toString(),widget.buildNum,i);
+                  if(widget.newTask) saveIntPrefs(widget.buildNum + 1,SaveTask.taskDataListLength.toString());
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => TaskControllerPage()),

@@ -2,12 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/Comon/CustomDrawer.dart';
-
+import 'package:taskpagetest/Comon/Enum/SaveTask.dart';
 import '_task_setting.dart';
-import '_time_controller_page.dart';
-import 'home.dart';
-import 'main.dart';
-
 
 //Task管理
 class TaskControllerPage extends StatefulWidget{
@@ -31,15 +27,15 @@ class _TaskControllerPage extends State<TaskControllerPage>{
   Future<void> init() async{
 
     List<TaskDataList> taskList = [];
-    taskLen = await loadIntPrefs('taskDataListLength');
+    taskLen = await loadIntPrefs(SaveTask.taskDataListLength.toString());
     //Listの数が１以上ならロードする
     if(taskLen != 0){
       for(int i = 0;i < taskLen; i++){
         List<bool> list = [];
         String task = '';
 
-        task = await loadStringPrefs('','setTask',i);
-        for(int x = 0;x < 3; x++) list.add(await loadBoolPrefs(false,'setTaskRanking',i,x));
+        task = await loadStringPrefs('',SaveTask.setTask.toString(),i);
+        for(int x = 0;x < 3; x++) list.add(await loadBoolPrefs(false,SaveTask.setTaskRanking.toString(),i,x));
         taskList.add(TaskDataList(task,list,false));
       }
       //優先度反映
@@ -100,19 +96,19 @@ class _TaskControllerPage extends State<TaskControllerPage>{
 
                 //一旦Prefs全削除
                 for(int i = 0;i < len + 3; i++){
-                  await removePrefs('setTask',i);
+                  await removePrefs(SaveTask.setTask.toString(),i);
                   for(int x = 0;x < 3; x++){
-                    await removePrefs('setTaskRanking',i,x);
+                    await removePrefs(SaveTask.setTaskRanking.toString(),i,x);
                   }
                 }
 
                 //セーブしなおし
                 for(int i = 0;i < taskDataList.length; i++){
 
-                  await saveStringPrefs(taskDataList[i].task,'setTask',i);
+                  await saveStringPrefs(taskDataList[i].task,SaveTask.setTask.toString(),i);
 
                   for(int x = 0;x < 3; x++){
-                    await saveBoolPrefs(taskDataList[i].taskRankingList[x],'setTaskRanking',i,x);
+                    await saveBoolPrefs(taskDataList[i].taskRankingList[x],SaveTask.setTaskRanking.toString(),i,x);
                   }
                 }
                 //List数セーブ

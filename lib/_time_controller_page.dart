@@ -2,10 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/_time_setting_page.dart';
-import 'package:taskpagetest/taskControllerPage.dart';
-
 import 'Comon/CustomDrawer.dart';
-import 'home.dart';
+import 'Comon/Enum/SaveTime.dart';
 
 class TimeControllerPage extends StatefulWidget{
   @override
@@ -24,7 +22,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
 
   Future<void> init()async{
 
-    int listLen = await loadIntPrefs(0,'lockDataList.length');
+    int listLen = await loadIntPrefs(0,SaveTime.lockDataListlength.toString());
     if(listLen != 0){
       for(int i = 1;i < listLen + 1;i++){
 
@@ -34,12 +32,12 @@ class _TimeControllerPage extends State<TimeControllerPage>{
         bool switchActive = false;
         List<bool> list = [];
 
-        startTime = await loadStringPrefs('00:00','startTime','$i');
-        endTime = await loadStringPrefs('00:00','endTime','$i');
-        usingPhoneTimeLimit = await loadStringPrefs('15','UsingPhoneTimeLimit','$i');
-        switchActive = await loadBoolPrefs(false,'switchActive','$i');
+        startTime = await loadStringPrefs('00:00',SaveTime.startTime.toString(),'$i');
+        endTime = await loadStringPrefs('00:00',SaveTime.endTime.toString(),'$i');
+        usingPhoneTimeLimit = await loadStringPrefs('15',SaveTime.UsingPhoneTimeLimit.toString(),'$i');
+        switchActive = await loadBoolPrefs(false,SaveTime.switchActive.toString(),'$i');
         for(int x = 0;x < 7;x++){
-          list.add(await loadBoolPrefs(false,'dayOfWeek','$i',x));
+          list.add(await loadBoolPrefs(false,SaveTime.dayOfWeek.toString(),'$i',x));
         }
 
         lockDataList.add(LockDataList(switchActive, false, startTime, endTime, usingPhoneTimeLimit, list));
@@ -96,26 +94,26 @@ class _TimeControllerPage extends State<TimeControllerPage>{
               }
               //一旦Prefs全削除
               for(int i = 0;i < len; i++){
-                removePrefs('startTime',i);
-                removePrefs('endTime',i);
-                removePrefs('UsingPhoneTimeLimit',i);
-                removePrefs('switchActive',i);
+                removePrefs(SaveTime.startTime.toString(),i);
+                removePrefs(SaveTime.endTime.toString(),i);
+                removePrefs(SaveTime.UsingPhoneTimeLimit.toString(),i);
+                removePrefs(SaveTime.switchActive.toString(),i);
                 for(int x = 0;x < 7; x++){
-                  removePrefs('dayOfWeek',i,x);
+                  removePrefs(SaveTime.dayOfWeek.toString(),i,x);
                 }
               }
               //セーブしなおし
               for(int i = 0;i < lockDataList.length; i++){
-                saveStringPrefs(lockDataList[i].startTime,'startTime','$i');
-                saveStringPrefs(lockDataList[i].endTime,'endTime','$i');
-                saveStringPrefs(lockDataList[i].setUsingPhoneTimeLimit,'UsingPhoneTimeLimit','$i');
-                saveBoolPrefs(lockDataList[i]._switchActive,'switchActive','$i');
+                saveStringPrefs(lockDataList[i].startTime,SaveTime.startTime.toString(),'$i');
+                saveStringPrefs(lockDataList[i].endTime,SaveTime.endTime.toString(),'$i');
+                saveStringPrefs(lockDataList[i].setUsingPhoneTimeLimit,SaveTime.UsingPhoneTimeLimit.toString(),'$i');
+                saveBoolPrefs(lockDataList[i]._switchActive,SaveTime.switchActive.toString(),'$i');
                 for(int x = 0;x < 7; x++){
-                  saveBoolPrefs(lockDataList[i]._isDayOfWeekSelectedList[x],'dayOfWeek','$i',x);
+                  saveBoolPrefs(lockDataList[i]._isDayOfWeekSelectedList[x],SaveTime.dayOfWeek.toString(),'$i',x);
                 }
               }
               //List数セーブ
-              saveIntPrefs(lockDataList.length,'lockDataList.length');
+              saveIntPrefs(lockDataList.length,SaveTime.lockDataListlength.toString());
               setState(() {});
             },
             icon: Icon(Icons.delete),
@@ -190,7 +188,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
                   value: lockDataList[index]._switchActive,
                   onChanged: (bool e){
                     setState(() => lockDataList[index]._switchActive = e);
-                    saveBoolPrefs(lockDataList[index]._switchActive,'switchActive','$index');
+                    saveBoolPrefs(lockDataList[index]._switchActive,SaveTime.switchActive.toString(),'$index');
                   }
               ),
             ],
