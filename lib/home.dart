@@ -5,14 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taskpagetest/taskControllerPage.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
-import '_lock_page.dart';
+import 'package:taskpagetest/Comon/CustomDrawer.dart';
 import '_task_setting.dart';
-import '_time_controller_page.dart';
-
-
-
 
 class HomePage extends StatefulWidget {
   HomePage(this.achievementTaskFlag);
@@ -120,6 +115,7 @@ class _MyHomePageState extends State<HomePage> {
     }
 
     isLoading = false;
+    print(isLoading);
     setState(() {});//画面を再描画するときに必要
   }
 
@@ -161,105 +157,10 @@ class _MyHomePageState extends State<HomePage> {
         ),
       ),
       //Drawer
-      drawer: Drawer(
-        child: ListView(
-          children: <Widget>[
-            Container(
-              height: 60,
-              width: double.infinity,
-              child: DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ), child: null,
-              ),
-            ),
-            _homeControllerPage('ホーム'),
-            _timeControllerPage('ロック管理'),
-            _taskControllerPage('タスク管理'),
-            _lockControllerPage('ロック画面'),
-          ],
-        ),
-      ),
-//
-
+      drawer: CustomDrawer(),
     );
   }
 
-  //Drawer　Homeページへ
-  Widget _homeControllerPage(String text){
-    return Container(
-      child: ListTile(
-        title: Text(text),
-        trailing: Icon(Icons.arrow_forward),
-        onTap: (){
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => HomePage('')),
-          );
-        }
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 1.0,color:Colors.grey)),
-      ),
-    );
-  }
-
-  //Drawer　Lock管理ページへ
-  Widget _timeControllerPage(String text){
-    return Container(
-      child: ListTile(
-        title: Text(text),
-        trailing: Icon(Icons.arrow_forward),
-        onTap: (){
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => TimeControllerPage()),
-          );
-        }
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 1.0,color:Colors.grey)),
-      ),
-    );
-  }
-
-  //Drawer　タスク管理ページへ
-  Widget _taskControllerPage(String text){
-    return Container(
-      child: ListTile(
-          title: Text(text),
-          trailing: Icon(Icons.arrow_forward),
-          onTap: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TaskControllerPage()),
-            );
-          }
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 1.0,color:Colors.grey)),
-      ),
-    );
-  }
-
-  //Drawer　Homeページへ
-  Widget _lockControllerPage(String text){
-    return Container(
-      child: ListTile(
-          title: Text(text),
-          trailing: Icon(Icons.arrow_forward),
-          onTap: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => LockPage()),
-            );
-          }
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 1.0,color:Colors.grey)),
-      ),
-    );
-  }
 
   //タスク達成数とスマホ使用時間のグラフ表示
   Widget _lockCountView(){

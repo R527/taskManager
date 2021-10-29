@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/_time_setting_page.dart';
 import 'package:taskpagetest/taskControllerPage.dart';
 
+import 'Comon/CustomDrawer.dart';
 import 'home.dart';
 
 class TimeControllerPage extends StatefulWidget{
@@ -131,24 +132,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
           )
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          children: <Widget>[
-            Container(
-              height: 60,
-              width: double.infinity,
-              child: DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ), child: null,
-              ),
-            ),
-            _homeControllerPage('ホーム'),
-            _timeControllerPage('ロック管理'),
-            _taskControllerPage('タスク管理'),
-          ],
-        ),
-      ),
+      drawer: CustomDrawer(),
       body:Center(
         child: isLoading ? CircularProgressIndicator() :Column(
           children: <Widget>[
@@ -162,61 +146,6 @@ class _TimeControllerPage extends State<TimeControllerPage>{
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _homeControllerPage(String text){
-    return Container(
-      child: ListTile(
-          title: Text(text),
-          trailing: Icon(Icons.arrow_forward),
-          onTap: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomePage('')),
-            );
-          }
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 1.0,color:Colors.grey)),
-      ),
-    );
-  }
-  //Drawer用
-  Widget _timeControllerPage(String text){
-    return Container(
-      child: ListTile(
-          title: Text(text),
-          trailing: Icon(Icons.arrow_forward),
-          onTap: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TimeControllerPage()),
-            );
-          }
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 1.0,color:Colors.grey)),
-      ),
-    );
-  }
-
-  //Drawer用
-  Widget _taskControllerPage(String text){
-    return Container(
-      child: ListTile(
-          title: Text(text),
-          trailing: Icon(Icons.arrow_forward),
-          onTap: (){
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => TaskControllerPage()),
-            );
-          }
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 1.0,color:Colors.grey)),
       ),
     );
   }

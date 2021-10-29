@@ -1,8 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:taskpagetest/Comon/CustomDrawer.dart';
 import 'home.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -15,6 +19,15 @@ class LockPage extends StatefulWidget{
 //Task管理メインクラス
 class _LockPage extends State<LockPage> with WidgetsBindingObserver{
 
+  final BannerAd myBanner = BannerAd(
+    adUnitId: Platform.isAndroid ? 'ca-app-pub-3940256099942544/6300978111' : '',
+    size: AdSize.banner,
+    request: AdRequest(),
+    listener: BannerAdListener(onAdLoaded: (Ad ad) {
+      print('$BannerAd loaded.');
+    }),
+  );
+
   String taskText = '';
   int achievementTask = 0;
 
@@ -25,6 +38,7 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
 
   //初期化ロード処理
   void init() async{
+    await myBanner.load();
     //タスク内容をロード
     taskText = await loadStringPrefs('','setTask',0);
     if(taskText == ''){
@@ -82,6 +96,11 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
               Text(taskText,style: TextStyle(fontSize: 24)),
               _successButtonWidget(),
               _failTaskButtonWidget(),
+              SizedBox(
+                height: 64.0,
+                width: double.infinity,
+                child: AdWidget(ad: myBanner),
+              ),
             ],
           ),
         )
