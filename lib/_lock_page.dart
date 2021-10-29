@@ -187,11 +187,13 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
       if(lockDataList[i]._switchActive &&
           !getDateTime(lockDataList[i].startTime).isAfter(now) &&
           getDateTime(lockDataList[i].endTime).isAfter(now) &&
-          convertWeekDayNum(lockDataList[i]._isDayOfWeekSelectedList)
+          convertWeekDayNum(lockDataList[i]._isDayOfWeekSelectedList)&&
+          timeLimit > int.parse(lockDataList[i].setUsingPhoneTimeLimit)
       ){
         timeLimit = int.parse(lockDataList[i].setUsingPhoneTimeLimit) ;
         print('ロック該当している $timeLimit');
       }
+
     }
 
     //利用時間を制限してない場合はスケジュール設定をしない
