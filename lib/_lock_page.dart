@@ -181,19 +181,21 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
     //ロック設定を取得して次に一番早いロック時間を計算する
     int timeLimit = 0;
     var now = DateTime.now();
+    print(lockDataList.length);
     for(int i = 0;i < lockDataList.length; i++){
-
       //ロックがアクティブで時間曜日共にあっている場合
       if(lockDataList[i]._switchActive &&
           !getDateTime(lockDataList[i].startTime).isAfter(now) &&
           getDateTime(lockDataList[i].endTime).isAfter(now) &&
           convertWeekDayNum(lockDataList[i]._isDayOfWeekSelectedList)
       ){
-        print('ロック該当している');
-        timeLimit = int.parse(lockDataList[i].setUsingPhoneTimeLimit) * 60;
+        timeLimit = int.parse(lockDataList[i].setUsingPhoneTimeLimit) ;
+        print('ロック該当している $timeLimit');
       }
     }
 
+    //利用時間を制限してない場合はスケジュール設定をしない
+    if(timeLimit == 0) return;
 
     // 初期化
     flutterLocalNotificationsPlugin.initialize(
@@ -207,12 +209,13 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
         0, // id
         'Local Notification Title ', // title
         'Local Notification Body', // body
-        tz.TZDateTime.now(tz.local).add(Duration(seconds: timeLimit)), // 5秒後設定
+        tz.TZDateTime.now(tz.local).add(Duration(seconds: timeLimit)),
         NotificationDetails(
             android: AndroidNotificationDetails('my_channel_id', 'my_channel_name', //'my_channel_description',
                 importance: Importance.max, priority: Priority.high),
             iOS: IOSNotificationDetails()),
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime, androidAllowWhileIdle: true);
+        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime, androidAllowWhileIdle: true
+    );
   }
 
   Future<String> loadStringPrefs(String def,String saveName,int buildNum) async{
