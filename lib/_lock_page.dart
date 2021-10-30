@@ -193,7 +193,6 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
         timeLimit = int.parse(lockDataList[i].setUsingPhoneTimeLimit) ;
         print('ロック該当している $timeLimit');
       }
-
     }
 
     //利用時間を制限してない場合はスケジュール設定をしない
@@ -211,7 +210,7 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
         0, // id
         'Local Notification Title ', // title
         'Local Notification Body', // body
-        tz.TZDateTime.now(tz.local).add(Duration(seconds: timeLimit)),
+        tz.TZDateTime.now(tz.local).add(Duration(minutes: timeLimit)),
         NotificationDetails(
             android: AndroidNotificationDetails('my_channel_id', 'my_channel_name', //'my_channel_description',
                 importance: Importance.max, priority: Priority.high),

@@ -21,10 +21,11 @@ class _TimeControllerPage extends State<TimeControllerPage>{
   List<String> defDayOfWeekList = ['日','月','火','水','木','金','土'];
 
   Future<void> init()async{
+    print('TimeController_init');
 
     int listLen = await loadIntPrefs(0,SaveTime.lockDataListlength.toString());
     if(listLen != 0){
-      for(int i = 1;i < listLen + 1;i++){
+      for(int i = 0;i < listLen;i++){
 
         String startTime = '';
         String endTime = '';
@@ -36,6 +37,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
         endTime = await loadStringPrefs('00:00',SaveTime.endTime.toString(),'$i');
         usingPhoneTimeLimit = await loadStringPrefs('15',SaveTime.UsingPhoneTimeLimit.toString(),'$i');
         switchActive = await loadBoolPrefs(false,SaveTime.switchActive.toString(),'$i');
+        print(switchActive);
         for(int x = 0;x < 7;x++){
           list.add(await loadBoolPrefs(false,SaveTime.dayOfWeek.toString(),'$i',x));
         }
@@ -186,9 +188,9 @@ class _TimeControllerPage extends State<TimeControllerPage>{
               ),
               Switch(
                   value: lockDataList[index]._switchActive,
-                  onChanged: (bool e){
+                  onChanged: (bool e) async{
                     setState(() => lockDataList[index]._switchActive = e);
-                    saveBoolPrefs(lockDataList[index]._switchActive,SaveTime.switchActive.toString(),'$index');
+                    await saveBoolPrefs(lockDataList[index]._switchActive,SaveTime.switchActive.toString(),'$index');
                   }
               ),
             ],
@@ -217,9 +219,13 @@ class _TimeControllerPage extends State<TimeControllerPage>{
     return prefs.getString(saveStr + buildNum) ?? def;
   }
 
-  void saveBoolPrefs(bool setBool,String saveStr,String buildNum,[int? dayNum]) async{
+  Future<void> saveBoolPrefs(bool setBool,String saveStr,String buildNum,[int? dayNum]) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(saveStr + buildNum + '$dayNum!', setBool);
+    if(dayNum == null){
+      await prefs.setBool(saveStr + buildNum, setBool);
+    }else{
+      await prefs.setBool(saveStr + buildNum + '$dayNum!', setBool);
+    }
   }
 
   Future<bool> loadBoolPrefs(bool def, String saveStr,String buildNum,[int? dayNum]) async {
