@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:usage_stats/usage_stats.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -20,6 +20,12 @@ class HomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<HomePage> {
 
+  //Prefs全消去
+  bool isPrefsClear = false;
+  //テスト用
+  int apllicationLength = 0;
+  int usingHouer = 0;
+
   //バナー広告表示のため
   final BannerAd myBanner = BannerAd(
     adUnitId: Platform.isAndroid ? 'ca-app-pub-3940256099942544/6300978111' : '',
@@ -30,18 +36,19 @@ class _MyHomePageState extends State<HomePage> {
     }),
   );
 
-  //Prefs全消去
-  bool isPrefsClear = false;
-
+  //グラフ関連
   int taskNum = 0;//タスクの数を保存
+  List<TaskDataList> taskDataList = [];
   final GlobalKey<ScaffoldState> _openDrawerKey = GlobalKey<ScaffoldState>();//Drawer用
   String dropdownValue = '月間';//月間年間ごとのグラフを切り替え用フラグ
   final usePhoneList = <UsePhoneData>[];//グラフのデータ格納
 
-  bool isLoading = true;
+  //利用時間取得
+  // List<AppUsageInfo> _infos = [];
+  List<EventUsageInfo> events = [];
+  int seconds = 0;
 
-  //List
-  List<TaskDataList> taskDataList = [];
+  bool isLoading = true;
 
   Future<void> init() async{
     await myBanner.load();
@@ -95,7 +102,6 @@ class _MyHomePageState extends State<HomePage> {
             await saveBoolPrefs(taskDataList[i].taskRankingList[x],SaveTask.setTaskRanking.toString(),i,x);
           }
         }
-
       }
       //List数セーブ
       await saveIntPrefs(taskDataList.length,SaveTask.taskDataListLength.toString());
@@ -106,14 +112,7 @@ class _MyHomePageState extends State<HomePage> {
     //グラフデータ関連
     var now = DateTime.now();
     final _dateFormatter = DateFormat("yyyy/MM/dd'");
-    //今日のグラフデータをロードセットする
-    // String day = DateFormat('yyyy/MM/dd').format(now);
-    // int usePhone = await loadIntPrefs(SaveGraph.usePhone.toString() + day);
-    // int achievementTask = await loadIntPrefs(SaveGraph.achievementTask.toString() + day);
-    // print(SaveGraph.achievementTask.toString() + achievementTask.toString());
-    //
-    // DateTime dateTime = _dateFormatter.parseStrict(day);
-    // usePhoneList.add(UsePhoneData(dateTime,usePhone,achievementTask));
+
     //昨日までのグラフデータをロードする
     for(int i = 0;i < 365;i++){
       String day = DateFormat('yyyy/MM/dd').format(now.add(Duration(days:i) * -1));
@@ -157,14 +156,18 @@ class _MyHomePageState extends State<HomePage> {
             //タスク表示
             _addTaskButton(),
             _taskView(),
-            SizedBox(
-              height: 64.0,
-              width: double.infinity,
-              child: AdWidget(ad: myBanner),
-            ),
+            // SizedBox(
+            //   height: 64.0,
+            //   width: double.infinity,
+            //   child: AdWidget(ad: myBanner),
+            // ),
+            Text('アプリ数:$apllicationLength'+'利用時間:$usingHouer')
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: initUsage
+     ),
       //Drawer
       drawer: CustomDrawer(),
     );
@@ -387,6 +390,51 @@ class _MyHomePageState extends State<HomePage> {
         )
     );
   }
+
+  //スマホ利用時間取得
+  // void getUsageStats() async {
+  //   seconds = 0;
+  //   try {
+  //     final now= DateTime.now();
+  //     DateTime startDate = DateTime(now.year, now.month, now.day, now.hour -1);
+  //     DateTime endDate = DateTime(now.year, now.month, now.day,now.hour);
+  //     List<EventUsageInfo> infos = await AppUsage.getAppUsage(startDate, endDate);
+  //     setState(() {
+  //       _infos = infos;
+  //     });
+  //
+  //     for(final info in infos){
+  //       seconds += info.usage.inSeconds;
+  //     }
+  //     print(seconds ~/ 3600);
+  //     usingHouer = seconds ~/ 3600;
+  //     apllicationLength = _infos.length;
+  //     print(_infos.length);
+  //   } on AppUsageException catch (exception) {
+  //     print(exception);
+  //   }
+  // }
+
+  // Future<void> initUsage() async {
+  //   UsageStats.grantUsagePermission();
+  //   DateTime now = new DateTime.now();
+  //   DateTime endDate = now;
+  //   DateTime startDate = endDate.subtract(Duration(days: 1));
+  //
+  //   List<EventUsageInfo> queryEvents =
+  //   await UsageStats.queryEvents(startDate, endDate);
+  //   // List<NetworkInfo> networkInfos =
+  //   // await UsageStats.queryNetworkUsageStats(startDate, endDate);
+  //   // Map<String?, NetworkInfo?> netInfoMap = Map.fromIterable(networkInfos,
+  //   //     key: (v) => v.packageName, value: (v) => v);
+  //
+  //   this.setState(() {
+  //     events = queryEvents.reversed.toList();
+  //     //_netInfoMap = netInfoMap;
+  //   });
+  //   print(events.length);
+  // }
+
 
 
   Future<void> saveStringPrefs(String setStr,String saveName,int buildNum) async{

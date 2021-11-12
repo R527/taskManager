@@ -1,4 +1,4 @@
-com.example.taskpagetest
+com.enoiu.taskpagetest
 attr adSize
 attr adSizes
 attr adUnitId

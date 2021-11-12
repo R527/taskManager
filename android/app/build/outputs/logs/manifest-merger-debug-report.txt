@@ -122,7 +122,7 @@ MERGED from [com.google.android.gms:play-services-ads-base:19.1.0] C:\Users\sun4
 		ADDED from C:\Users\sun47\StudioProjects\taskpagetest\android\app\src\main\AndroidManifest.xml:4:9-37
 	android:icon
 		ADDED from C:\Users\sun47\StudioProjects\taskpagetest\android\app\src\main\AndroidManifest.xml:5:9-43
-activity#com.example.taskpagetest.MainActivity
+activity#com.enoiu.taskpagetest.MainActivity
 ADDED from C:\Users\sun47\StudioProjects\taskpagetest\android\app\src\main\AndroidManifest.xml:6:9-34:20
 	android:launchMode
 		ADDED from C:\Users\sun47\StudioProjects\taskpagetest\android\app\src\main\AndroidManifest.xml:8:13-43

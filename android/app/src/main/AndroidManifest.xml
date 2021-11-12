@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.taskpagetest">
+    package="your package name" >
+
    <application
         android:label="taskpagetest"
         android:icon="@mipmap/ic_launcher">
