@@ -162,9 +162,6 @@ class _MyHomePageState extends State<HomePage> {
           ],
         ),
       ),
-     //  floatingActionButton: FloatingActionButton(
-     //    onPressed: initUsage
-     // ),
       //Drawer
       drawer: CustomDrawer(),
     );
