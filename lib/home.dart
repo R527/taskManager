@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:usage_stats/usage_stats.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -45,7 +44,6 @@ class _MyHomePageState extends State<HomePage> {
 
   //利用時間取得
   // List<AppUsageInfo> _infos = [];
-  List<EventUsageInfo> events = [];
   int seconds = 0;
 
   bool isLoading = true;
@@ -156,18 +154,18 @@ class _MyHomePageState extends State<HomePage> {
             //タスク表示
             _addTaskButton(),
             _taskView(),
-            // SizedBox(
-            //   height: 64.0,
-            //   width: double.infinity,
-            //   child: AdWidget(ad: myBanner),
-            // ),
-            Text('アプリ数:$apllicationLength'+'利用時間:$usingHouer')
+            SizedBox(
+              height: 64.0,
+              width: double.infinity,
+              child: AdWidget(ad: myBanner),
+            ),
+            // Text('アプリ数:$apllicationLength'+'利用時間:$usingHouer')
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: initUsage
-     ),
+     //  floatingActionButton: FloatingActionButton(
+     //    onPressed: initUsage
+     // ),
       //Drawer
       drawer: CustomDrawer(),
     );
