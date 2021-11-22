@@ -159,7 +159,6 @@ class _MyHomePageState extends State<HomePage> {
               width: double.infinity,
               child: AdWidget(ad: myBanner),
             ),
-            // Text('アプリ数:$apllicationLength'+'利用時間:$usingHouer')
           ],
         ),
       ),
