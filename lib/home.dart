@@ -7,8 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 import 'package:taskpagetest/Comon/CustomDrawer.dart';
 import 'package:taskpagetest/Comon/Enum/SaveGraph.dart';
+import 'Comon/CustomPrefs.dart';
 import 'Comon/Enum/SaveTask.dart';
-import '_task_setting.dart';
+import 'task_setting.dart';
 
 class HomePage extends StatefulWidget {
   HomePage(this.achievementTaskFlag);
@@ -20,7 +21,7 @@ class HomePage extends StatefulWidget {
 class _MyHomePageState extends State<HomePage> {
 
   //Prefs全消去
-  bool isPrefsClear = false;
+
   //テスト用
   int apllicationLength = 0;
   int usingHouer = 0;
@@ -42,29 +43,19 @@ class _MyHomePageState extends State<HomePage> {
   String dropdownValue = '月間';//月間年間ごとのグラフを切り替え用フラグ
   final usePhoneList = <UsePhoneData>[];//グラフのデータ格納
 
-  //利用時間取得
-  // List<AppUsageInfo> _infos = [];
   int seconds = 0;
-
   bool isLoading = true;
 
   Future<void> init() async{
     await myBanner.load();
-    //Prefs 全削除
-    if(isPrefsClear){
-      SharedPreferences preferences = await SharedPreferences.getInstance();
-      preferences.clear();
-    }
-
     //タスク内容をロードする
     taskNum = await loadIntPrefs(SaveTask.taskDataListLength.toString());
     if(taskNum != 0){
       List<TaskDataList> taskList = [];
       for(int i = 0;i < taskNum; i++){
-        String task = '';
         List<bool> list = [];
-        task = await loadStringPrefs('',SaveTask.setTask.toString(),i);
-        for(int x = 0;x < 3; x++) list.add(await loadBoolPrefs(SaveTask.setTaskRanking.toString(),i,x));
+        String task = await loadStringPrefs('',SaveTask.setTask.toString(),i);
+        for(int x = 0;x < 3; x++) list.add(await loadBoolPrefs(false,SaveTask.setTaskRanking.toString(),i,x));
         taskList.add(TaskDataList(task, list, false));
       }
 
@@ -383,105 +374,6 @@ class _MyHomePageState extends State<HomePage> {
             )
         )
     );
-  }
-
-  //スマホ利用時間取得
-  // void getUsageStats() async {
-  //   seconds = 0;
-  //   try {
-  //     final now= DateTime.now();
-  //     DateTime startDate = DateTime(now.year, now.month, now.day, now.hour -1);
-  //     DateTime endDate = DateTime(now.year, now.month, now.day,now.hour);
-  //     List<EventUsageInfo> infos = await AppUsage.getAppUsage(startDate, endDate);
-  //     setState(() {
-  //       _infos = infos;
-  //     });
-  //
-  //     for(final info in infos){
-  //       seconds += info.usage.inSeconds;
-  //     }
-  //     print(seconds ~/ 3600);
-  //     usingHouer = seconds ~/ 3600;
-  //     apllicationLength = _infos.length;
-  //     print(_infos.length);
-  //   } on AppUsageException catch (exception) {
-  //     print(exception);
-  //   }
-  // }
-
-  // Future<void> initUsage() async {
-  //   UsageStats.grantUsagePermission();
-  //   DateTime now = new DateTime.now();
-  //   DateTime endDate = now;
-  //   DateTime startDate = endDate.subtract(Duration(days: 1));
-  //
-  //   List<EventUsageInfo> queryEvents =
-  //   await UsageStats.queryEvents(startDate, endDate);
-  //   // List<NetworkInfo> networkInfos =
-  //   // await UsageStats.queryNetworkUsageStats(startDate, endDate);
-  //   // Map<String?, NetworkInfo?> netInfoMap = Map.fromIterable(networkInfos,
-  //   //     key: (v) => v.packageName, value: (v) => v);
-  //
-  //   this.setState(() {
-  //     events = queryEvents.reversed.toList();
-  //     //_netInfoMap = netInfoMap;
-  //   });
-  //   print(events.length);
-  // }
-
-
-
-  Future<void> saveStringPrefs(String setStr,String saveName,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(buildNum == null){
-      await prefs.setString(saveName, setStr);
-    }else{
-      await prefs.setString(saveName + '$buildNum', setStr);
-    }
-  }
-
-  Future<String> loadStringPrefs(String def,String saveName,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(saveName + '$buildNum') ?? def;
-  }
-
-  Future<void> saveIntPrefs(int setInt,String saveName) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(saveName, setInt);
-  }
-
-  Future<int> loadIntPrefs(String saveName) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(saveName) ?? 0;
-  }
-
-  Future<void> saveBoolPrefs(bool setBool,String saveName,int buildNum, [int? rankingNum]) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(rankingNum == null){
-      await prefs.setBool(saveName + buildNum.toString(), setBool);
-    }else{
-      await prefs.setBool(saveName + buildNum.toString() + rankingNum.toString(), setBool);
-    }
-  }
-
-  Future<bool> loadBoolPrefs(String saveName, int buildNum,[int? rankingNum]) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool flag = false;
-    if(rankingNum == null){
-      flag = prefs.getBool(saveName + '$buildNum') ?? false;
-    }else{
-      flag = prefs.getBool(saveName + '$buildNum' + '$rankingNum!') ?? false;
-    }
-    return flag;
-  }
-
-  Future<void> removePrefs(String saveStr,int index,[int? day]) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(day == null){
-      await prefs.remove(saveStr + '$index');
-    }else{
-      await prefs.remove(saveStr + '$index' + '$day!');
-    }
   }
 }
 

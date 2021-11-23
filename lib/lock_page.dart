@@ -1,8 +1,6 @@
 import 'dart:io';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
@@ -10,11 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/Comon/Enum/SaveGraph.dart';
 import 'package:taskpagetest/Comon/Enum/SaveTask.dart';
 import 'package:taskpagetest/Comon/Enum/SaveTime.dart';
+import 'Comon/CustomPrefs.dart';
 import 'home.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-String loadString = '';
+// String loadString = '';
 
 class LockPage extends StatefulWidget{
   @override
@@ -36,11 +35,15 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
   String taskText = '';
   int achievementTask = 0;
 
-  bool isLoading = true;
   //今日の日付取得
   String day = DateFormat('yyyy/MM/dd').format(DateTime.now());
-
   List<LockDataList> lockDataList = [];
+
+  //通知
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+  //その他
+  bool isLoading = true;
 
   //初期化ロード処理
   void init() async{
@@ -61,16 +64,12 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
     int listLen = await loadIntPrefs(SaveTime.lockDataListlength.toString());
     if(listLen != 0){
       for(int i = 1;i < listLen + 1;i++){
-        String startTime = '';
-        String endTime = '';
-        String usingPhoneTimeLimit = '';
-        bool switchActive = false;
         List<bool> list = [];
 
-        startTime = await loadStringPrefs('00:00',SaveTime.startTime.toString(),i);
-        endTime = await loadStringPrefs('00:00',SaveTime.endTime.toString(),i);
-        usingPhoneTimeLimit = await loadStringPrefs('15',SaveTime.UsingPhoneTimeLimit.toString(),i);
-        switchActive = await loadBoolPrefs(false,SaveTime.switchActive.toString(),i);
+        String startTime = await loadStringPrefs('00:00',SaveTime.startTime.toString(),i);
+        String endTime = await loadStringPrefs('00:00',SaveTime.endTime.toString(),i);
+        String usingPhoneTimeLimit = await loadStringPrefs('15',SaveTime.UsingPhoneTimeLimit.toString(),i);
+        bool switchActive = await loadBoolPrefs(false,SaveTime.switchActive.toString(),i);
         for(int x = 0;x < 7;x++){
           list.add(await loadBoolPrefs(false,SaveTime.dayOfWeek.toString(),i,x));
         }
@@ -88,11 +87,14 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
     init();
   }
 
+  //通知セットアップ
   Future<void> setup() async {
     tz.initializeTimeZones();
     var tokyo = tz.getLocation('Asia/Tokyo');
     tz.setLocalLocation(tokyo);
   }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -115,7 +117,6 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
       ),
     );
   }
-
 
   //タスク達成時用
   Widget _successButtonWidget(){
@@ -145,8 +146,6 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
       child:ElevatedButton(
         onPressed: () async{
           _scheduleLocalNotification();
-          //広告表示
-
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => HomePage('失敗')),
@@ -156,9 +155,6 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
     );
   }
 
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-
   //String型のデータをDateTimeに返還する
   DateTime getDateTime(String dateTimeStr){
     final _dateFormatter = DateFormat("y-M-d HH:mm");
@@ -166,13 +162,13 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
     return _dateFormatter.parseStrict(now + dateTimeStr);
   }
 
+  //曜日設定があっているかのフラグを返す
   bool convertWeekDayNum(List<bool> list){
     var now = DateTime.now();
     bool flag = false;
     now.weekday == 7 ? flag = list[0] : flag =  list[now.weekday];
     return flag;
   }
-
 
   /// ローカル通知をスケジュールする
   void _scheduleLocalNotification() async {
@@ -219,46 +215,7 @@ class _LockPage extends State<LockPage> with WidgetsBindingObserver{
     );
   }
 
-  Future<String> loadStringPrefs(String def,String saveName,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(saveName + '$buildNum') ?? def;
-  }
 
-  Future<void> saveIntPrefs(int setInt,String saveName) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(saveName, setInt);
-  }
-
-  Future<int> loadIntPrefs(String saveName) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(saveName) ?? 0;
-  }
-
-  void saveBoolPrefs(bool setBool,String saveStr,int buildNum,[int? dayNum]) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(saveStr + buildNum.toString() + '$dayNum!', setBool);
-  }
-
-  Future<bool> loadBoolPrefs(bool def, String saveStr,int buildNum,[int? dayNum]) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool flag = false;
-    if(dayNum == null){
-      flag = prefs.getBool(saveStr + buildNum.toString()) ?? def;
-    }else{
-      flag = prefs.getBool(saveStr + buildNum.toString() + '$dayNum!') ?? def;
-    }
-    return flag;
-  }
-
-
-  Future<void> removePrefs(String saveStr,int index,[int? day]) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(day == null){
-      await prefs.remove(saveStr + '$index');
-    }else{
-      await prefs.remove(saveStr + '$index' + '$day!');
-    }
-  }
 }
 
 class LockDataList {

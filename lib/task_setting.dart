@@ -1,8 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/taskControllerPage.dart';
-
+import 'Comon/CustomPrefs.dart';
 import 'Comon/Enum/SaveTask.dart';
 
 //タスクsettingpage
@@ -28,9 +27,8 @@ class _TaskSettingPage extends State<TaskSettingPage>{
       //優先度１のみtrueそれ以外はfalse
       _isRankingSelected[i] = await loadBoolPrefs(i == 0 ? true:false,SaveTask.setTaskRanking.toString(),widget.buildNum,i);
     }
-
-
   }
+
   @override
   void initState() {
     super.initState();
@@ -135,38 +133,6 @@ class _TaskSettingPage extends State<TaskSettingPage>{
           content: Text('タスク内容を入力してください。'),
         ),
     );
-  }
-
-
-  //以下Prefs処理
-  void saveStringPrefs(String setStr,String saveName,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(saveName + '$buildNum', setStr);
-  }
-
-  Future<String> loadStringPrefs(String def,String saveName,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(saveName + '$buildNum') ?? def;
-  }
-
-  void saveIntPrefs(int setInt,String saveName) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(saveName, setInt);
-  }
-
-  Future<int> loadIntPrefs(int def,String saveName,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(saveName) ?? def;
-  }
-
-  void saveBoolPrefs(bool setBool,String saveName,int buildNum,[int? rankingNum]) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(saveName + '$buildNum' + '$rankingNum!', setBool);
-  }
-
-  Future<bool> loadBoolPrefs(bool def, String saveName,int buildNum,[int? rankingNum]) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(saveName + '$buildNum' + '$rankingNum!') ?? def;
   }
 }
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:taskpagetest/taskControllerPage.dart';
 
-import '../_lock_page.dart';
-import '../_time_controller_page.dart';
+import '../lock_page.dart';
+import '../time_controller_page.dart';
 import '../home.dart';
 
 

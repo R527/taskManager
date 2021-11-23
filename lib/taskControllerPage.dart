@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskpagetest/Comon/CustomDrawer.dart';
 import 'package:taskpagetest/Comon/Enum/SaveTask.dart';
-import '_task_setting.dart';
+import 'Comon/CustomPrefs.dart';
+import 'task_setting.dart';
 
 //Task管理
 class TaskControllerPage extends StatefulWidget{
@@ -48,8 +49,6 @@ class _TaskControllerPage extends State<TaskControllerPage>{
       }
     }
 
-
-
    isLoading = false;
     setState(() {});
   }
@@ -81,8 +80,7 @@ class _TaskControllerPage extends State<TaskControllerPage>{
           //いらないタスクを捨てるボタン
           IconButton(
               onPressed: () async{
-                //todo いらないタスク捨てる
-
+                //いらないタスク捨てる
                 int len = taskDataList.length;
                 if(len == 0) return;
 
@@ -192,56 +190,6 @@ class _TaskControllerPage extends State<TaskControllerPage>{
         }
       }
     return str;
-  }
-
-  //下記Prefs処理
-  Future<void> saveStringPrefs(String setStr,String saveName,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(saveName + '$buildNum', setStr);
-  }
-
-  Future<String> loadStringPrefs(String def,String saveName,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(saveName + '$buildNum') ?? def;
-  }
-
-  Future<void> saveBoolPrefs(bool setBool,String saveName,int buildNum,[int? rankingNum]) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(rankingNum == null){
-      await prefs.setBool(saveName + '$buildNum', setBool);
-    }else{
-      await prefs.setBool(saveName + '$buildNum' + '$rankingNum!', setBool);
-    }
-  }
-
-  Future<bool> loadBoolPrefs(bool def, String saveName,int buildNum,[int? rankingNum]) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool flag = false;
-    if(rankingNum == null){
-      flag =  prefs.getBool(saveName + '$buildNum') ?? def;
-    }else{
-      flag =  prefs.getBool(saveName + '$buildNum' + '$rankingNum!') ?? def;
-    }
-    return flag;
-  }
-
-  Future<void> saveIntPrefs(int setInt,String saveName) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(saveName, setInt);
-  }
-
-  Future<int> loadIntPrefs(String saveName) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(saveName) ?? 0;
-  }
-
-  Future<void> removePrefs(String saveStr,int index,[int? day]) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(day == null){
-      await prefs.remove(saveStr + '$index');
-    }else{
-      await prefs.remove(saveStr + '$index' + '$day!');
-    }
   }
 }
 

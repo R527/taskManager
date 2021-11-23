@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taskpagetest/_time_setting_page.dart';
+import 'package:taskpagetest/time_setting_page.dart';
 import 'Comon/CustomDrawer.dart';
+import 'Comon/CustomPrefs.dart';
 import 'Comon/Enum/SaveTime.dart';
 
+//時間設定を管理する画面
 class TimeControllerPage extends StatefulWidget{
   @override
   _TimeControllerPage createState() => _TimeControllerPage();
@@ -15,33 +16,24 @@ class _TimeControllerPage extends State<TimeControllerPage>{
   final GlobalKey<ScaffoldState> _openDrawerkey = GlobalKey<ScaffoldState>();
 
   bool isLoading = true;
-
+  int listLen = 0;
   //List
   List<LockDataList> lockDataList = [];
   List<String> defDayOfWeekList = ['日','月','火','水','木','金','土'];
 
   Future<void> init()async{
-    print('TimeController_init');
-
-    int listLen = await loadIntPrefs(0,SaveTime.lockDataListlength.toString());
+    listLen = await loadIntPrefs(SaveTime.lockDataListlength.toString());
     if(listLen != 0){
       for(int i = 0;i < listLen;i++){
-
-        String startTime = '';
-        String endTime = '';
-        String usingPhoneTimeLimit = '';
-        bool switchActive = false;
         List<bool> list = [];
 
-        startTime = await loadStringPrefs('00:00',SaveTime.startTime.toString(),'$i');
-        endTime = await loadStringPrefs('00:00',SaveTime.endTime.toString(),'$i');
-        usingPhoneTimeLimit = await loadStringPrefs('15',SaveTime.UsingPhoneTimeLimit.toString(),'$i');
-        switchActive = await loadBoolPrefs(false,SaveTime.switchActive.toString(),'$i');
-        print(switchActive);
+        String startTime = await loadStringPrefs('00:00',SaveTime.startTime.toString(),i);
+        String endTime = await loadStringPrefs('00:00',SaveTime.endTime.toString(),i);
+        String usingPhoneTimeLimit = await loadStringPrefs('15',SaveTime.UsingPhoneTimeLimit.toString(),i);
+        bool switchActive = await loadBoolPrefs(false,SaveTime.switchActive.toString(),i);
         for(int x = 0;x < 7;x++){
-          list.add(await loadBoolPrefs(false,SaveTime.dayOfWeek.toString(),'$i',x));
+          list.add(await loadBoolPrefs(false,SaveTime.dayOfWeek.toString(),i,x));
         }
-
         lockDataList.add(LockDataList(switchActive, false, startTime, endTime, usingPhoneTimeLimit, list));
       }
     }
@@ -106,12 +98,12 @@ class _TimeControllerPage extends State<TimeControllerPage>{
               }
               //セーブしなおし
               for(int i = 0;i < lockDataList.length; i++){
-                saveStringPrefs(lockDataList[i].startTime,SaveTime.startTime.toString(),'$i');
-                saveStringPrefs(lockDataList[i].endTime,SaveTime.endTime.toString(),'$i');
-                saveStringPrefs(lockDataList[i].setUsingPhoneTimeLimit,SaveTime.UsingPhoneTimeLimit.toString(),'$i');
-                saveBoolPrefs(lockDataList[i]._switchActive,SaveTime.switchActive.toString(),'$i');
+                saveStringPrefs(lockDataList[i].startTime,SaveTime.startTime.toString(),i);
+                saveStringPrefs(lockDataList[i].endTime,SaveTime.endTime.toString(),i);
+                saveStringPrefs(lockDataList[i].setUsingPhoneTimeLimit,SaveTime.UsingPhoneTimeLimit.toString(),i);
+                saveBoolPrefs(lockDataList[i]._switchActive,SaveTime.switchActive.toString(),i);
                 for(int x = 0;x < 7; x++){
-                  saveBoolPrefs(lockDataList[i]._isDayOfWeekSelectedList[x],SaveTime.dayOfWeek.toString(),'$i',x);
+                  saveBoolPrefs(lockDataList[i]._isDayOfWeekSelectedList[x],SaveTime.dayOfWeek.toString(),i,x);
                 }
               }
               //List数セーブ
@@ -122,10 +114,10 @@ class _TimeControllerPage extends State<TimeControllerPage>{
           ),
           IconButton(
             onPressed: (){
-              //todo 新しいロック設定を追加する
+              //新しいロック設定を追加する
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => TimeSettingPage(lockDataList.length + 1,true)),
+                MaterialPageRoute(builder: (context) => TimeSettingPage(listLen,true)),
               );
             },
             icon: Icon(Icons.add),
@@ -150,7 +142,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
     );
   }
 
-  //Listを作るところ
+  //時間設定を表示したListViewを作るところ
   Widget _ListViewController(int index){
     return Container(
       margin: EdgeInsets.all(5),
@@ -161,7 +153,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
           onTap: (){
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => TimeSettingPage(index + 1,false)),
+              MaterialPageRoute(builder: (context) => TimeSettingPage(index,false)),
             );
           },
           title:Row(
@@ -190,7 +182,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
                   value: lockDataList[index]._switchActive,
                   onChanged: (bool e) async{
                     setState(() => lockDataList[index]._switchActive = e);
-                    await saveBoolPrefs(lockDataList[index]._switchActive,SaveTime.switchActive.toString(),'$index');
+                    await saveBoolPrefs(lockDataList[index]._switchActive,SaveTime.switchActive.toString(),index);
                   }
               ),
             ],
@@ -199,6 +191,7 @@ class _TimeControllerPage extends State<TimeControllerPage>{
     );
   }
 
+  //時間設定時に使われるText
   Widget _lockSettingTextStyle(String text,double size,int index){
     return Text(
       text,
@@ -209,54 +202,6 @@ class _TimeControllerPage extends State<TimeControllerPage>{
     );
   }
 
-  void saveStringPrefs(String setStr,String saveStr,String buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(saveStr + buildNum, setStr);
-  }
-
-  Future<String> loadStringPrefs(String def,String saveStr,String buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(saveStr + buildNum) ?? def;
-  }
-
-  Future<void> saveBoolPrefs(bool setBool,String saveStr,String buildNum,[int? dayNum]) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(dayNum == null){
-      await prefs.setBool(saveStr + buildNum, setBool);
-    }else{
-      await prefs.setBool(saveStr + buildNum + '$dayNum!', setBool);
-    }
-  }
-
-  Future<bool> loadBoolPrefs(bool def, String saveStr,String buildNum,[int? dayNum]) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    bool flag = false;
-    if(dayNum == null){
-      flag = prefs.getBool(saveStr + buildNum) ?? def;
-    }else{
-      flag = prefs.getBool(saveStr + buildNum + '$dayNum!') ?? def;
-    }
-    return flag;
-  }
-
-  void saveIntPrefs(int setInt,String saveStr) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(saveStr, setInt);
-  }
-
-  Future<int> loadIntPrefs(int def, String saveStr) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getInt(saveStr) ?? def;
-  }
-
-  void removePrefs(String saveStr,int index,[int? day]) async{
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    if(day == null){
-      prefs.remove(saveStr + '$index');
-    }else{
-      prefs.remove(saveStr + '$index' + '$day!');
-    }
-  }
 }
 
 class LockDataList {

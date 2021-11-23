@@ -1,8 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:taskpagetest/_time_controller_page.dart';
-
+import 'package:taskpagetest/time_controller_page.dart';
+import 'Comon/CustomPrefs.dart';
 import 'Comon/Enum/SaveTime.dart';
 
 //タスク管理用のPage
@@ -24,7 +23,6 @@ class _TimeSettingPage extends State<TimeSettingPage> {
   //時間設定
   var initialTime;
   late TimeOfDay _timeOfDay = TimeOfDay(hour: 0, minute: 0);
-  late DateTime _datetime = DateTime(0);
   //曜日関連
   bool _weeklyFlag = false;
   List<bool> _isDayOfWeekSelected = [false, false, false, false, false, false, false];
@@ -70,7 +68,7 @@ class _TimeSettingPage extends State<TimeSettingPage> {
                 saveStringPrefs(setUsingPhoneTimeLimit,SaveTime.UsingPhoneTimeLimit.toString(),widget.buildNum);
 
                 //新規作成の場合　Listの数を更新
-                if(widget.newBuild)saveIntPrefs(widget.buildNum,SaveTime.lockDataListlength.toString());
+                if(widget.newBuild)saveIntPrefs(widget.buildNum + 1,SaveTime.lockDataListlength.toString());
                 setState(() {});
               //ロック管理画面に戻る
                 Navigator.push(
@@ -98,6 +96,7 @@ class _TimeSettingPage extends State<TimeSettingPage> {
     );
   }
 
+  //ダイヤログを表示する
   Future _showDialog() async {
     await showDialog(
       context: context,
@@ -137,9 +136,7 @@ class _TimeSettingPage extends State<TimeSettingPage> {
 
                         height: MediaQuery.of(context).size.height / 3,
                         child: CupertinoPicker(
-
                           itemExtent: 30,
-
                           onSelectedItemChanged: (int value) {
                             setUsingPhoneTimeLimit = ((value * 5) + 15).toString();
                             setState(() {});
@@ -158,12 +155,10 @@ class _TimeSettingPage extends State<TimeSettingPage> {
                           ],
                         ),
                       );
-
                     });
               }
             }
           )
-
         ],
       ),
     );
@@ -217,7 +212,6 @@ class _TimeSettingPage extends State<TimeSettingPage> {
                           _dayOfWeekSettingButton('土'),
 
                         ],
-                        //direction:SizedBox.fromSize(child: ),
                         onPressed: (int index) {
                           setState(() {
                             _isDayOfWeekSelected[index] = !_isDayOfWeekSelected[index];
@@ -268,30 +262,6 @@ class _TimeSettingPage extends State<TimeSettingPage> {
     );
   }
 
-  void saveStringPrefs(String setStr,String saveStr,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString(saveStr + '$buildNum', setStr);
-  }
-
-  Future<String> loadStringPrefs(String def,String saveStr,int buildNum) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString(saveStr + '$buildNum') ?? def;
-  }
-
-  void saveBoolPrefs(bool setBool,String saveStr,int buildNum,[int? dayNum]) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(saveStr + '$buildNum' + '$dayNum!', setBool);
-  }
-
-  Future<bool> loadBoolPrefs(bool def, String saveStr,int buildNum,[int? dayNum]) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(saveStr + '$buildNum' + '$dayNum!') ?? def;
-  }
-
-  void saveIntPrefs(int setInt,String saveStr) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(saveStr, setInt);
-  }
 }
 
 
